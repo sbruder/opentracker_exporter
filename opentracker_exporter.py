@@ -84,8 +84,8 @@ peers     = Gauge('tracker_peers', 'Number of known peers')
 seeds     = Gauge('tracker_seeds', 'Number of known seeds')
 completed = Gauge('tracker_completed', 'Number of completed torrents')
 
-connections          = Gauge('tracker_connections', 'Number of connections', ['protocol', 'type'])
-connections_livesync = Gauge('tracker_connections_livesync', 'Number of livesync connections')
+connections          = Counter('tracker_connections', 'Number of connections', ['protocol', 'type'])
+connections_livesync = Counter('tracker_connections_livesync', 'Number of livesync connections')
 
 renew_count = Gauge('tracker_renew_count', 'Number of clients renewing the connection at a specific interval', ['interval'])
 http_error  = Counter('tracker_http_error', 'Number of http errors', ['code'])
@@ -105,9 +105,9 @@ while True:
     for protocol, types in stats.connections.items():
         if protocol != 'livesync':
             for type_, count in types.items():
-                connections.labels(protocol, type_).set(count)
+                connections.labels(protocol, type_).inc(count - connections.labels(protocol, type_)._value.get())
 
-    connections_livesync = stats.connections['livesync']
+    connections_livesync.inc(stats.connections['livesync'] - connections_livesync._value.get())
 
     # “debug” stats
     for interval, count in stats.renew_count.items():
