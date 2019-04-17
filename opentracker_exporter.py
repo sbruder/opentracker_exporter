@@ -50,7 +50,7 @@ class OpentrackerStats:
         }
 
         # “debug” stats
-        self.renew_count = dict(
+        self.renew = dict(
             [(int(interval), count) for interval, count in map(
                 parse_attrlist_item('interval'),
                 self.data.xpath('debug/renew/count')
@@ -87,7 +87,7 @@ completed = Counter('tracker_completed', 'Number of completed torrents')
 connections          = Counter('tracker_connections', 'Number of connections', ['protocol', 'type'])
 connections_livesync = Counter('tracker_connections_livesync', 'Number of livesync connections')
 
-renew_count = Gauge('tracker_renew_count', 'Number of clients renewing the connection at a specific interval', ['interval'])
+renew       = Gauge('tracker_renew', 'Number of clients renewing the connection at a specific interval', ['interval'])
 http_error  = Counter('tracker_http_error', 'Number of http errors', ['code'])
 mutex_stall = Counter('tracker_mutex_stall', '')
 
@@ -110,8 +110,8 @@ while True:
     connections_livesync.inc(stats.connections['livesync'] - connections_livesync._value.get()) # ugly
 
     # “debug” stats
-    for interval, count in stats.renew_count.items():
-        renew_count.labels(interval).set(count)
+    for interval, count in stats.renew.items():
+        renew.labels(interval).set(count)
 
     for code, count in stats.http_error.items():
         http_error.labels(code).inc(count - http_error.labels(code)._value.get()) # also ugly
