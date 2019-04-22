@@ -15,7 +15,4 @@ docker run -d --name opentracker_exporter -p 9574:9574 -e OPENTRACKER_URL=tracke
 
 Replace tracker.example.com:6969 with the host and port of your tracker.
 
-By default stats are refreshed every 5 seconds. You can change that by setting
-the `OPENTRACKER_REFRESH` environment variable.
-
 Metrics are available on http://localhost:9574/metrics

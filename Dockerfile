@@ -1,21 +1,19 @@
-FROM python:3-alpine
+FROM golang:alpine as builder
 
-WORKDIR /usr/src/opentracker_exporter
+WORKDIR /go/src/github.com/sbruder/opentracker_exporter/
 
-COPY requirements.txt .
+COPY opentracker_exporter.go .
 
-RUN apk add --no-cache --virtual .build-deps \
-        build-base \
-        libxml2-dev \
-        libxslt-dev \
-    && pip3 install --no-cache-dir -r requirements.txt \
-    && apk del .build-deps \
-    && apk add --no-cache \
-        libxml2 \
-        libxslt
+RUN apk add --no-cache git upx
 
-COPY opentracker_exporter.py .
+RUN go get -v \
+    && CGO_ENABLED=0 go build -v -ldflags="-s -w" \
+    && upx --ultra-brute opentracker_exporter
 
-ENTRYPOINT ["/usr/src/opentracker_exporter/opentracker_exporter.py"]
+FROM scratch
+
+COPY --from=builder /go/src/github.com/sbruder/opentracker_exporter/opentracker_exporter /opentracker_exporter
+
+ENTRYPOINT ["/opentracker_exporter"]
 
 EXPOSE 9574
