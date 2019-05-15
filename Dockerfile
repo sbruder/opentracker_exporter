@@ -14,6 +14,8 @@ FROM scratch
 
 COPY --from=builder /go/src/github.com/sbruder/opentracker_exporter/opentracker_exporter /opentracker_exporter
 
+USER 1000
+
 ENTRYPOINT ["/opentracker_exporter"]
 
 EXPOSE 9574
